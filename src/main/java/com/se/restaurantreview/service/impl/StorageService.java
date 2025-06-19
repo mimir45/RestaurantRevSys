@@ -7,12 +7,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,7 +65,18 @@ public class StorageService implements IStorageService {
     }
 
     @Override
-    public Optional<Resource> loadAsResource(String id) {
-        return Optional.empty();
+    public Optional<UrlResource> loadAsResource(String fileName) {
+       Path file = rootLocation.resolve(fileName);
+        try {
+            UrlResource resource  = new UrlResource(file.toUri());
+
+            if (resource.exists()||resource.isReadable()){
+                return Optional.of(resource);
+            }else {
+                return Optional.empty();
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
